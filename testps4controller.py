@@ -72,5 +72,8 @@ class MyController(Controller):
        pass
 controller = MyController(interface="/dev/input/js0", connecting_using_ds4drv=False)
 controller.debug = False
+###########################################
+# Nothing executes after the listen command
+# All logic needs to be above
+###########################################
 controller.listen(timeout=60)
-print(cruiseSet)
