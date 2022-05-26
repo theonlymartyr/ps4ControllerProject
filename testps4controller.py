@@ -15,11 +15,20 @@ from pyPS4Controller.event_mapping.DefaultMapping import DefaultMapping
 
 brakePressed = False
 cruiseSet = False
-
-
-
+speed = 0
+cruiseSpeed = 0
 
 class MyController(Controller):
+    ##########################################
+    # -Axis values are a 32 bit signed int
+    #  so we can divide by 32767 to get a value
+    #  between 0 & 1
+    # -Trigger values are a 32 bit signed int
+    #  so we add 32767 and divide by 65534 to
+    #  get a value between 0 & 1. 50% press on
+    #  trigger is 0, 0-25% is negative, 50+%
+    #  is positve otherwise
+    ##########################################
     def __init__(self, **kwargs):
         Controller.__init__(self, **kwargs)
     def on_L3_up(self, value):
@@ -30,12 +39,17 @@ class MyController(Controller):
     # R2 will be used as the accelerator
     ####################################
     def on_R2_press(self, value):
-       print(value/32767)
+       global speed, cruiseSpeed
+       speed = (value+32767)/65534
+       if not cruiseSet:
+           cruiseSpeed = speed
+       print("Speed: " + str(speed))
+       print("Cruise: " + str(cruiseSpeed))
     ###################################
     # Do we want to do anything on accelerator release?
     ###################################
     def on_R2_release(self):
-       print("accelerator released")
+       pass 
     def on_L2_press(self, value):
        global cruiseSet
        if cruiseSet:
@@ -43,21 +57,22 @@ class MyController(Controller):
        print(value/32767)
     def on_L2_release(self):
        pass
-       #print("Stop Braking")
     def on_triangle_press(self):
-       global cruiseSet
+       global cruiseSet, speed, cruiseSpeed
        cruiseSet = True
+       cruiseSpeed = speed
+       print("Cruise Set")
     def on_square_press(self):
        global cruiseSet
-       #cruiseSet = False
     def on_circle_press(self):
-       global brakePressed
-       #brakePressed = True
+       global cruiseSet, speed, cruiseSpeed
+       cruiseSet = False
+       cruiseSpeed = speed
     def on_circle_release(self):
        brakePressed = False
-#####################################################################
-# I want to ignore left/right for now, so they need to be overwritten
-#####################################################################
+    #####################################################################
+    # Everything defined below is just to prevent printed output for now
+    #####################################################################
     def on_L3_left(self, value):
        pass
     def on_L3_right(self, value):
